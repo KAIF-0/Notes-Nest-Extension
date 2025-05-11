@@ -11,7 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "./components/ui/tabs"
 import "./style.css"
 
 const Index = () => {
-  const [activeTab, setActiveTab] = useState("notes")
+  const [activeTab, setActiveTab] = useState("todos")
 
   return (
     <div className="min-h-screen bg-slate-50 py-6 px-4 md:px-8">
@@ -32,6 +32,13 @@ const Index = () => {
           <div className="bg-white rounded-lg shadow-sm flex overflow-x-auto hide-scrollbar">
             <TabsList className="flex w-full h-auto px-2 py-2 w-aut0">
               <TabsTrigger
+                value="todos"
+                className="flex items-center py-1 px-4 flex-1">
+                <CheckSquare className="w-4 h-4 mr-1" />
+                <span className="hidden xs:inline">To-Do List</span>
+                <span className="inline xs:hidden">Tasks</span>
+              </TabsTrigger>
+              <TabsTrigger
                 value="notes"
                 className="flex items-center py-1 px-4 flex-1">
                 <StickyNote className="w-4 h-4 mr-1" />
@@ -45,13 +52,6 @@ const Index = () => {
                 <span className="hidden xs:inline">List Manager</span>
                 <span className="inline xs:hidden">Lists</span>
               </TabsTrigger>
-              <TabsTrigger
-                value="todos"
-                className="flex items-center py-1 px-4 flex-1">
-                <CheckSquare className="w-4 h-4 mr-1" />
-                <span className="hidden xs:inline">To-Do List</span>
-                <span className="inline xs:hidden">Tasks</span>
-              </TabsTrigger>
 
               <TabsTrigger
                 value="passwords"
@@ -64,16 +64,15 @@ const Index = () => {
           </div>
 
           <div className="bg-white rounded-lg shadow-sm p-4 md:p-6 min-h-[500px]">
+            <TabsContent value="todos" className="mt-0">
+              <ToDoList />
+            </TabsContent>
             <TabsContent value="notes" className="mt-0">
               <StickyNotes />
             </TabsContent>
 
             <TabsContent value="lists" className="mt-0">
               <ListManager />
-            </TabsContent>
-
-            <TabsContent value="todos" className="mt-0">
-              <ToDoList />
             </TabsContent>
 
             <TabsContent value="passwords" className="mt-0">
