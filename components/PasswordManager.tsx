@@ -42,6 +42,18 @@ const PasswordManager: React.FC = () => {
   }, [])
 
   useEffect(() => {
+    // Only run in extension popup context
+    if (typeof chrome !== "undefined" && chrome.tabs) {
+      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+        console.log(tabs)
+        if (tabs[0] && tabs[0].url) {
+          setSite(new URL(tabs[0].url).origin)
+        }
+      })
+    }
+  }, [])
+
+  useEffect(() => {
     PasswordStorage.storage.set("passwordManager", JSON.stringify(credentials))
   }, [credentials])
 
