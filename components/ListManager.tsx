@@ -45,6 +45,7 @@ interface List {
 
 const ListManager: React.FC = () => {
   const [lists, setLists] = useState<List[]>([])
+  const [filteredLists, setFilteredLists] = useState<List[]>([])
   const [heading, setHeading] = useState("")
   const [newItems, setNewItems] = useState<ListItem[]>([
     { id: Date.now().toString(), text: "", isHidden: false }
@@ -54,13 +55,14 @@ const ListManager: React.FC = () => {
   >({})
 
   useEffect(() => {
-    const saveCredentials = async (key: string) => {
+    const getCredentials = async (key: string) => {
       const savedLists = await ListStorage.storage.get(key)
       if (savedLists) {
         setLists(JSON.parse(savedLists))
+        setFilteredLists(JSON.parse(savedLists))
       }
     }
-    saveCredentials("listManager")
+    getCredentials("listManager")
   }, [])
 
   useEffect(() => {
@@ -114,17 +116,30 @@ const ListManager: React.FC = () => {
     }
 
     setLists([...lists, newList])
+    setFilteredLists([...filteredLists, newList])
     setHeading("")
     setNewItems([{ id: Date.now().toString(), text: "", isHidden: false }])
   }
 
   const handleDeleteList = (listId: string) => {
     setLists(lists.filter((list) => list.id !== listId))
+    setFilteredLists(filteredLists.filter((list) => list.id !== listId))
   }
 
   const handleDeleteItem = (listId: string, itemId: string) => {
     setLists(
       lists.map((list) => {
+        if (list.id === listId) {
+          return {
+            ...list,
+            items: list.items.filter((item) => item.id !== itemId)
+          }
+        }
+        return list
+      })
+    )
+    setFilteredLists(
+      filteredLists.map((list) => {
         if (list.id === listId) {
           return {
             ...list,
@@ -150,6 +165,18 @@ const ListManager: React.FC = () => {
   const copyListContent = (list: List) => {
     const formattedList = `${list.heading}\n${list.items.map((item) => `- ${item.text}`).join("\n")}`
     copyToClipboard(formattedList, "List")
+  }
+
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const searchValue = e.target.value.toLowerCase().trim()
+
+    if (searchValue) {
+      setFilteredLists(
+        lists.filter((list) => list.heading.includes(searchValue))
+      )
+    } else {
+      setFilteredLists(lists)
+    }
   }
 
   return (
@@ -222,15 +249,25 @@ const ListManager: React.FC = () => {
       </div>
 
       <div className="space-y-4">
-        <h2 className="text-xl font-semibold">Your Lists</h2>
+        <div className="flex justify-between items-center">
+          <h2 className="text-xl font-semibold">Your Lists</h2>
+          <div className="flex items-center">
+            <input
+              type="text"
+              placeholder="Search..."
+              onChange={handleSearch}
+              className="w-52 px-2 py-2 border-2 note-shadow border-gray-300 rounded-lg focus:outline-gray-400 text-gray-500 flex-1"
+            />
+          </div>
+        </div>
 
-        {lists.length === 0 ? (
+        {filteredLists.length === 0 ? (
           <p className="text-muted-foreground text-center py-6">
             No lists created yet
           </p>
         ) : (
           <Accordion type="multiple" className="space-y-3">
-            {lists.map((list) => (
+            {filteredLists.map((list) => (
               <AccordionItem
                 key={list.id}
                 value={list.id}

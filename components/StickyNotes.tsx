@@ -1,4 +1,4 @@
-import { Clipboard, Pin, Trash2 } from "lucide-react"
+import { Bell, Clipboard, Pin, Search, Trash2 } from "lucide-react"
 import React, { useEffect, useState } from "react"
 
 import StickyNotesStorage from "../lib/storage"
@@ -34,37 +34,24 @@ const colorOptions = [
 
 const StickyNotes: React.FC = () => {
   const [notes, setNotes] = useState<StickyNote[]>([])
+  const [filteredNotes, setFilteredNotes] = useState<StickyNote[]>([...notes])
   const [newNoteContent, setNewNoteContent] = useState("")
   const [selectedColor, setSelectedColor] = useState("note-yellow")
 
   useEffect(() => {
-    const saveCredentials = async (key: string) => {
+    const getCredentials = async (key: string) => {
       const savedCredentials = await StickyNotesStorage.storage.get(key)
       if (savedCredentials) {
         setNotes(JSON.parse(savedCredentials))
+        setFilteredNotes(JSON.parse(savedCredentials))
       }
     }
-    saveCredentials("stickyNotes")
+    getCredentials("stickyNotes")
   }, [])
 
   useEffect(() => {
     StickyNotesStorage.storage.set("stickyNotes", JSON.stringify(notes))
   }, [notes])
-
-  useEffect(() => {
-    const checkClipboard = async () => {
-      try {
-        const clipboardText = await navigator.clipboard.readText()
-        if (clipboardText && !newNoteContent) {
-          setNewNoteContent(clipboardText)
-        }
-      } catch (error) {
-        console.log("Could not access clipboard")
-      }
-    }
-
-    checkClipboard()
-  }, [newNoteContent])
 
   const handleCreateNote = () => {
     if (!newNoteContent.trim()) {
@@ -78,11 +65,13 @@ const StickyNotes: React.FC = () => {
     }
 
     setNotes([...notes, newNote])
+    setFilteredNotes([...filteredNotes, newNote])
     setNewNoteContent("")
   }
 
   const handleDeleteNote = (id: string) => {
     setNotes(notes.filter((note) => note.id !== id))
+    setFilteredNotes(filteredNotes.filter((note) => note.id !== id))
   }
 
   const copyToClipboard = (text: string) => {
@@ -94,6 +83,18 @@ const StickyNotes: React.FC = () => {
       colorOptions.find((color) => color.value === colorValue)?.class ||
       "bg-note-yellow"
     )
+  }
+
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const searchValue = e.target.value.toLowerCase().trim()
+
+    if (searchValue) {
+      setFilteredNotes(
+        notes.filter((note) => note.content.includes(searchValue))
+      )
+    } else {
+      setFilteredNotes(notes)
+    }
   }
 
   return (
@@ -143,15 +144,25 @@ const StickyNotes: React.FC = () => {
         </Button>
       </div>
 
-      <h2 className="text-xl font-semibold">Your Notes</h2>
+      <div className="flex justify-between items-center">
+        <h2 className="text-xl font-semibold">Your Notes</h2>
+        <div className="flex items-center min-w-9">
+          <input
+            type="text"
+            placeholder="Search..."
+            onChange={handleSearch}
+            className="w-52 px-2 py-2 border-2 note-shadow border-gray-300 rounded-lg focus:outline-gray-400 text-gray-500 flex-1"
+          />
+        </div>
+      </div>
 
-      {notes.length === 0 ? (
+      {filteredNotes.length === 0 ? (
         <p className="text-muted-foreground text-center py-6">
           No sticky notes yet
         </p>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {notes.map((note) => (
+          {filteredNotes.map((note) => (
             <div
               key={note.id}
               className={cn(

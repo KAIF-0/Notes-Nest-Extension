@@ -48,13 +48,13 @@ const ToDoList: React.FC = () => {
   const [showCompleted, setShowCompleted] = useState(false)
 
   useEffect(() => {
-    const saveCredentials = async (key: string) => {
+    const getCredentials = async (key: string) => {
       const savedCredentials = await ToDoStorage.storage.get(key)
       if (savedCredentials) {
         setTasks(JSON.parse(savedCredentials))
       }
     }
-    saveCredentials("todoList")
+    getCredentials("todoList")
   }, [])
 
   useEffect(() => {

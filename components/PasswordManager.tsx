@@ -26,19 +26,23 @@ interface Credential {
 
 const PasswordManager: React.FC = () => {
   const [credentials, setCredentials] = useState<Credential[]>([])
+  const [filteredCredentials, setFilteredCredentials] = useState<Credential[]>(
+    []
+  )
   const [site, setSite] = useState("")
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
   const [showPassword, setShowPassword] = useState<Record<string, boolean>>({})
 
   useEffect(() => {
-    const saveCredentials = async (key: string) => {
+    const getCredentials = async (key: string) => {
       const savedCredentials = await PasswordStorage.storage.get(key)
       if (savedCredentials) {
         setCredentials(JSON.parse(savedCredentials))
+        setFilteredCredentials(JSON.parse(savedCredentials))
       }
     }
-    saveCredentials("passwordManager")
+    getCredentials("passwordManager")
   }, [])
 
   useEffect(() => {
@@ -70,6 +74,7 @@ const PasswordManager: React.FC = () => {
     }
 
     setCredentials([...credentials, newCredential])
+    setFilteredCredentials([...filteredCredentials, newCredential])
     setSite("")
     setUsername("")
     setPassword("")
@@ -77,6 +82,7 @@ const PasswordManager: React.FC = () => {
 
   const handleDelete = (id: string) => {
     setCredentials(credentials.filter((cred) => cred.id !== id))
+    setFilteredCredentials(filteredCredentials.filter((cred) => cred.id !== id))
   }
 
   const togglePasswordVisibility = (id: string) => {
@@ -90,9 +96,17 @@ const PasswordManager: React.FC = () => {
     navigator.clipboard.writeText(text)
   }
 
-  useEffect(() => {
-    console.log(window.location.href)
-  }, [])
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const searchValue = e.target.value.toLowerCase().trim()
+
+    if (searchValue) {
+      setFilteredCredentials(
+        credentials.filter((cred) => cred.site.includes(searchValue))
+      )
+    } else {
+      setFilteredCredentials(credentials)
+    }
+  }
 
   return (
     <div className="space-y-6">
@@ -170,15 +184,25 @@ const PasswordManager: React.FC = () => {
       </Card>
 
       <div className="space-y-4">
-        <h2 className="text-xl font-semibold">Saved Credentials</h2>
+        <div className="flex justify-between items-center">
+          <h2 className="text-xl font-semibold">Saved Credentials</h2>
+          <div className="flex items-center">
+            <input
+              type="text"
+              placeholder="Search..."
+              onChange={handleSearch}
+              className="w-44 px-2 py-2 border-2 note-shadow border-gray-300 rounded-lg focus:outline-gray-400 text-gray-500 flex-1"
+            />
+          </div>
+        </div>
 
-        {credentials.length === 0 ? (
+        {filteredCredentials.length === 0 ? (
           <p className="text-muted-foreground text-center py-6">
             No saved credentials yet
           </p>
         ) : (
           <div className="space-y-3">
-            {credentials.map((cred) => (
+            {filteredCredentials.map((cred) => (
               <Card key={cred.id} className="hover-scale">
                 <CardContent className="pt-6 pb-3">
                   <div className="flex justify-between items-center mb-2">
