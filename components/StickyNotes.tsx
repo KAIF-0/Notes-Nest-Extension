@@ -90,7 +90,7 @@ const StickyNotes: React.FC = () => {
 
     if (searchValue) {
       setFilteredNotes(
-        notes.filter((note) => note.content.includes(searchValue))
+        notes.filter((note) => note.content.toLowerCase().includes(searchValue))
       )
     } else {
       setFilteredNotes(notes)

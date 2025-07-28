@@ -101,7 +101,7 @@ const PasswordManager: React.FC = () => {
 
     if (searchValue) {
       setFilteredCredentials(
-        credentials.filter((cred) => cred.site.includes(searchValue))
+        credentials.filter((cred) => cred.site.toLowerCase().includes(searchValue))
       )
     } else {
       setFilteredCredentials(credentials)

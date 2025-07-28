@@ -172,7 +172,7 @@ const ListManager: React.FC = () => {
 
     if (searchValue) {
       setFilteredLists(
-        lists.filter((list) => list.heading.includes(searchValue))
+        lists.filter((list) => list.heading.toLowerCase().includes(searchValue))
       )
     } else {
       setFilteredLists(lists)
